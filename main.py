@@ -82,9 +82,9 @@ def load_fcs(path, return_log=True):
 
             # Convert number of bits to dtype:
             if datatype == 'F' and encoding_bits == '32':
-                col_dtype = np.float32
+                col_dtype = float
             elif datatype == 'I' and encoding_bits == '32':
-                col_dtype = np.uint32
+                col_dtype = int
             # elif datatype == 'F' and encoding_bits == '64':
                 # I could actually handle this case, but I don't have test data
                 # col_dtype == np.float64
@@ -224,6 +224,11 @@ for bucket, bucket_content in data.items():
                 print("ERROR: wrong archive path {} {}".format(
                     item['name'], archive_path))
                 errors["folder_not_found"].append(archive_path)
+
+try:
+    os.unlink("tmp.fcs")
+except:
+    pass
 
 ip_address_replaced = ip_address.replace(".", "_")
 json.dump(errors, open("{}_errors.json".format(
