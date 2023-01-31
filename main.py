@@ -10,7 +10,7 @@ try:
 except:
     pass
 
-print("Bactoscanner 1.0: this tool will analyze the database of a given Bactosense and print out missing or invalid files.")
+print("Bactoscanner 1.1: this tool will analyze the database of a given Bactosense and print out missing or invalid files.")
 ip_address = input("IP Address of the Bactosense: ").strip()
 login = input("User name (admin, service): ").strip().lower()
 password = input("Password: ").strip()
@@ -182,6 +182,7 @@ for idx, file in enumerate(files):
     files[idx] = file.replace(
         "\\\\", "/").replace(r'\\', r'/').replace('\\', '/')
 
+has_errors = False
 data = requests.get("http://"+ip_address+"/data",
                     auth=(login, password)).json()
 errors = {"fcs_not_found": [], "fcs_corrupt": [], "folder_not_found": []}
@@ -194,6 +195,7 @@ for bucket, bucket_content in data.items():
                 print("ERROR: FCS file not found {} {}".format(
                     item['name'], fcs_file))
                 errors["fcs_not_found"].append(fcs_file)
+                has_errors = True
             else:
                 try:
                     downloaded_fcs = requests.get(
@@ -202,6 +204,7 @@ for bucket, bucket_content in data.items():
                         print("ERROR: FCS file too small {} {}".format(
                             item['name'], fcs_file))
                         errors["fcs_corrupt"].append(fcs_file)
+                        has_errors = True
                     try:
                         with open("tmp.fcs", "wb") as f:
                             f.write(downloaded_fcs.content)
@@ -212,18 +215,20 @@ for bucket, bucket_content in data.items():
                         if meta is None or d is None:
                             raise Exception("FCS cannot be parsed")
                     except Exception as e:
-                        print(str(e))
                         print("ERROR: FCS file is corrupt {} {}".format(
                             item['name'], fcs_file))
                         errors["fcs_corrupt"].append(fcs_file)
+                        has_errors = True
                 except:
                     print("ERROR: FCS file cannot be downloaded {} {}".format(
                         item['name'], fcs_file))
                     errors["fcs_not_found"].append(fcs_file)
+                    has_errors = True
             if archive_path not in listing:
                 print("ERROR: wrong archive path {} {}".format(
                     item['name'], archive_path))
                 errors["folder_not_found"].append(archive_path)
+                has_errors = True
 
 try:
     os.unlink("tmp.fcs")
@@ -237,5 +242,10 @@ json.dump(data, open("{}_data.json".format(
     ip_address_replaced), "w"), indent=3)
 json.dump(files, open("{}_files.json".format(
     ip_address_replaced), "w"), indent=3)
+
+if not has_errors:
+    print("No error detected.")
+else:
+    print("Errors detected.")
 
 input("Press ENTER to exit...")
