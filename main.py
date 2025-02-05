@@ -206,12 +206,12 @@ for bucket, bucket_content in data.items():
                         errors["fcs_corrupt"].append(fcs_file)
                         has_errors = True
                     try:
-                        with open("tmp.fcs", "wb") as f:
+                        with open(item['timestamp']+".fcs", "wb") as f:
                             f.write(downloaded_fcs.content)
                     except Exception as e:
                         print(str(e))
                     try:
-                        d, meta = load_fcs("tmp.fcs")
+                        d, meta = load_fcs(item['timestamp']+"tmp.fcs")
                         if meta is None or d is None:
                             raise Exception("FCS cannot be parsed")
                     except Exception as e:

@@ -17,7 +17,6 @@ def download_csv(diagnostics_url, date_string, name):
     diagnostics_url.append("debug")
     diagnostics_url.append(date_string + "_" + name + ".csv")
     diagnostics_url = "/".join(diagnostics_url)
-    print("http://"+ip_address+diagnostics_url)
     downloaded_diagnostics = requests.get(
         "http://"+ip_address+diagnostics_url, auth=(login, password))
     try:
@@ -35,8 +34,8 @@ for bucket, bucket_content in data.items():
             archive_path = item['archivePath'].replace("/archive", "")
             try:
                 diagnostics_url = item['fcsUrl'].split("/")
-                date_string = diagnostics_url[-1].split("_")[0]
-                
+                date_string = diagnostics_url[-1].split("_")[0] +" "+ item['name']
+                print("Downloading " + date_string + "...")
                 downloaded_fcs = requests.get(
                     "http://"+ip_address+item['fcsUrl'], auth=(login, password))
                 if len(downloaded_fcs.content) < 200:
@@ -48,12 +47,18 @@ for bucket, bucket_content in data.items():
                 except Exception as e:
                     print(str(e))
                     
-
-                
-                download_csv(diagnostics_url, date_string, "diagnostics")
-                download_csv(diagnostics_url, date_string, "counts")
-                download_csv(diagnostics_url, date_string, "offsets")
-                download_csv(diagnostics_url, date_string, "signal_errors")
+                downloaded_png = requests.get(
+                    "http://"+ip_address+item['summaryUrl'], auth=(login, password))
+                try:
+                    with open(date_string + "_summary.png", "wb") as f:
+                        f.write(downloaded_png.content)
+                        
+                except Exception as e:
+                    print(str(e))
+                #download_csv(diagnostics_url, date_string, "diagnostics")
+                #download_csv(diagnostics_url, date_string, "counts")
+                #download_csv(diagnostics_url, date_string, "offsets")
+                #download_csv(diagnostics_url, date_string, "signal_errors")
             except:
                 print("ERROR: FCS file cannot be downloaded {} {}".format(
                     item['name'], fcs_file))
