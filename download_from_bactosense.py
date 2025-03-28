@@ -7,7 +7,8 @@ bNovate Technologies SA
 import os
 import requests
 print("Bactosense data downloader v2")
-ip_address = input("IP Address of the Bactosense: ").strip()
+ip_address = input("IP Address or URL of the Bactosense: ").strip()
+ip_address = ip_address.replace("http://", "").replace("https://", "")
 login = input("User name (admin, service): ").strip().lower()
 password = input("Password: ").strip()
 download_all = input("Download all files or only fcs? (y=all files/n): ").strip().lower()
@@ -34,13 +35,18 @@ def download_csv(diagnostics_url, date_string, name, subdir, extension=".csv"):
 data = requests.get("http://"+ip_address+"/data",
                     auth=(login, password)).json()
 subdir = ""
+ip_address_dir = ip_address.replace(".", "_")
+try:
+    os.makedirs(ip_address_dir)
+except:
+    pass
 for bucket, bucket_content in data.items():
     if bucket in ["auto", "manual"]:
         try:
-            os.makedirs(bucket)
+            os.makedirs(ip_address_dir+ "/"+bucket)
         except:
             pass
-        subdir = bucket + "/"
+        subdir = ip_address_dir+ "/" +bucket + "/"
         for item in bucket_content:
             fcs_file = item['fcsPath'].replace("/archive", "")
             archive_path = item['archivePath'].replace("/archive", "")
@@ -48,7 +54,7 @@ for bucket, bucket_content in data.items():
                 diagnostics_url = item['fcsUrl'].split("/")
                 only_date_string = diagnostics_url[-1].split("_")[0]
                 date_string = only_date_string +" "+ item['name']
-                subdir = bucket + "/" + date_string + "/"
+                subdir = ip_address_dir + "/" + bucket + "/" + date_string + "/"
                 try:
                     os.makedirs(subdir)
                 except:
