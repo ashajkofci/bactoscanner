@@ -153,7 +153,7 @@ class BactosenseDownloader:
                     print("Download aborted by user.")
                     break
                 
-                if bucket in ["auto", "manual"]:
+                if bucket in ["auto", "manual", "monitoring"]:
                     try:
                         os.makedirs(ip_address_dir+ "/"+bucket)
                     except:
