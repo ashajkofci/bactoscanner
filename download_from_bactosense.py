@@ -21,6 +21,10 @@ def download_csv(diagnostics_url, date_string, name, subdir, extension=".csv"):
     diagnostics_url = "/".join(diagnostics_url)
     downloaded_diagnostics = requests.get(
         "http://"+ip_address+diagnostics_url, auth=(login, password))
+    
+    if downloaded_diagnostics.status_code != 200:
+        print("ERROR: Cannot download {} {}".format(name, diagnostics_url))
+        return
     try:
         with open(subdir + date_string + "_" + name + extension, "wb") as f:
             f.write(downloaded_diagnostics.content)
@@ -42,7 +46,8 @@ for bucket, bucket_content in data.items():
             archive_path = item['archivePath'].replace("/archive", "")
             try:
                 diagnostics_url = item['fcsUrl'].split("/")
-                date_string = diagnostics_url[-1].split("_")[0] +" "+ item['name']
+                only_date_string = diagnostics_url[-1].split("_")[0]
+                date_string = only_date_string +" "+ item['name']
                 subdir = bucket + "/" + date_string + "/"
                 try:
                     os.makedirs(subdir)
@@ -76,12 +81,10 @@ for bucket, bucket_content in data.items():
                     os.makedirs(debug_subdir)
                 except:
                     pass
-                download_csv(diagnostics_url, date_string, "diagnostics", debug_subdir)
-                download_csv(diagnostics_url, date_string, "counts", debug_subdir)
-                download_csv(diagnostics_url, date_string, "offsets", debug_subdir)
-                download_csv(diagnostics_url, date_string, "signal_errors", debug_subdir)
-                download_csv(diagnostics_url, date_string, "results", debug_subdir, extension=".json")
-                download_csv(diagnostics_url, date_string, "gate", debug_subdir, extension=".json")
+                download_csv(diagnostics_url, only_date_string, "diagnostics", debug_subdir)
+                download_csv(diagnostics_url, only_date_string, "signal_errors", debug_subdir)
+                download_csv(diagnostics_url, only_date_string, "results", debug_subdir, extension=".json")
+                download_csv(diagnostics_url, only_date_string, "gate", debug_subdir, extension=".json")
                 
             except:
                 print("ERROR: FCS file cannot be downloaded {} {}".format(
