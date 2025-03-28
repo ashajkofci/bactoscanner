@@ -43,7 +43,7 @@ for bucket, bucket_content in data.items():
             try:
                 diagnostics_url = item['fcsUrl'].split("/")
                 date_string = diagnostics_url[-1].split("_")[0] +" "+ item['name']
-                subdir = subdir + date_string + "/"
+                subdir = bucket + "/" + date_string + "/"
                 try:
                     os.makedirs(subdir)
                 except:
@@ -71,13 +71,17 @@ for bucket, bucket_content in data.items():
                     
                 if download_all == "n":
                     continue
-                
-                download_csv(diagnostics_url, date_string, "diagnostics", subdir)
-                download_csv(diagnostics_url, date_string, "counts", subdir)
-                download_csv(diagnostics_url, date_string, "offsets", subdir)
-                download_csv(diagnostics_url, date_string, "signal_errors", subdir)
-                download_csv(diagnostics_url, date_string, "results", subdir, extension=".json")
-                download_csv(diagnostics_url, date_string, "gate", subdir, extension=".json")
+                debug_subdir= subdir + "debug/"
+                try:
+                    os.makedirs(debug_subdir)
+                except:
+                    pass
+                download_csv(diagnostics_url, date_string, "diagnostics", debug_subdir)
+                download_csv(diagnostics_url, date_string, "counts", debug_subdir)
+                download_csv(diagnostics_url, date_string, "offsets", debug_subdir)
+                download_csv(diagnostics_url, date_string, "signal_errors", debug_subdir)
+                download_csv(diagnostics_url, date_string, "results", debug_subdir, extension=".json")
+                download_csv(diagnostics_url, date_string, "gate", debug_subdir, extension=".json")
                 
             except:
                 print("ERROR: FCS file cannot be downloaded {} {}".format(
