@@ -1,0 +1,1 @@
+pyinstaller.exe .\download_from_bactosense.py -F
